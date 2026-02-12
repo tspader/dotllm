@@ -1,38 +1,28 @@
-import { Config } from "../../config.ts";
-import { defaultTheme } from "../../shared/theme.ts";
-import type { CommandDef } from "../../shared/yargs.ts";
+import { log } from "@clack/prompts";
+import { remove } from "dotllm/core";
+import { defaultTheme as t } from "dotllm/cli/theme";
+import type { CommandDef } from "dotllm/cli/yargs";
 
-export namespace RemoveCommand {
-  export const positionals = {
+export const command: CommandDef = {
+  description: "Remove a repo from the registry",
+  summary: "Remove a registered repo",
+  positionals: {
     name: {
-      type: "string" as const,
+      type: "string",
       description: "Name of the reference to remove",
       required: true,
     },
-  };
+  },
+  handler: (argv) => {
+    const name = String(argv.name);
 
-  export function run(argv: Record<string, unknown>): void {
-    const name = String(argv.name ?? "");
-    const global = Config.readGlobal();
-    const found = Config.findRepo(global, name);
-
-    if (!found) {
-      console.error(defaultTheme.error(`No repo named "${name}" in registry`));
+    const result = remove(name);
+    if (!result.ok) {
+      log.error(t.error(result.error));
       process.exit(1);
+      return;
     }
 
-    const updated = Config.removeRepo(global, name);
-    Config.writeGlobal(updated);
-
-    console.log(`${defaultTheme.success("removed")} ${defaultTheme.primary(name)}`);
-  }
-}
-
-export const remove: CommandDef = {
-  description: "Remove a repo from the global registry",
-  summary: "Remove a registered repo",
-  positionals: RemoveCommand.positionals,
-  handler: (argv) => {
-    RemoveCommand.run(argv);
+    log.step(`removed ${t.primary(name)}`);
   },
 };

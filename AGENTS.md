@@ -1,4 +1,5 @@
 # Rules
+- ALWAYS provide a path parameter when using the Glob tool
 - Always use native Bun APIs where applicable
 - Always export and import a single, top-level namespace instead of loose symbols
 - Always `import path from "path"` instead of `import { whatever } from "path"`; same for `fs` and other Bun modules
@@ -12,3 +13,4 @@
 - Never use `/tmp`; prefer `.llm/scratch`. Out-of-tree directory access forces manual approval, `.llm/scratch` lets you work autonomously
 - Never write utilities as Bash scripts; always use TypeScript + Bun
 - Never wrap `await foo()` in parentheses in an if statement
+- NEVER use the Glob tool without a path parameter

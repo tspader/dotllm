@@ -1,4 +1,4 @@
-import { defaultTheme as theme } from "./theme.ts";
+import { defaultTheme as theme } from "dotllm/cli/theme";
 
 const ANSI_RE = /\x1b\[[0-9;]*m/g;
 

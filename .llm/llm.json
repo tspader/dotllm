@@ -1,5 +1,7 @@
 {
   "refs": [
-    "asbridge"
+    "spn",
+    "spall",
+    "opencode"
   ]
 }

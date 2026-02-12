@@ -9,7 +9,14 @@
     "noEmit": true,
     "esModuleInterop": true,
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "baseUrl": ".",
+    "paths": {
+      "dotllm/cli": ["src/cli/index.ts"],
+      "dotllm/cli/*": ["src/cli/*"],
+      "dotllm/core": ["src/core/index.ts"],
+      "dotllm/core/*": ["src/core/*"]
+    }
   },
   "include": ["src/**/*.ts"]
 }

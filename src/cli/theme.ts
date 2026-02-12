@@ -2,7 +2,7 @@ type Formatter = (value: string) => string;
 
 export type Theme = {
   primary: Formatter;
-  code: Formatter;
+  link: Formatter;
   header: Formatter;
   command: Formatter;
   arg: Formatter;
@@ -22,7 +22,7 @@ const gray = (value: number) => rgb(value, value, value);
 
 export const defaultTheme: Theme = {
   primary: rgb(114, 161, 136),
-  code: rgb(212, 212, 161),
+  link: rgb(114, 140, 212),
   header: gray(128),
   command: rgb(114, 161, 136),
   arg: rgb(161, 212, 212),

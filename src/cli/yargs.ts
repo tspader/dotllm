@@ -1,8 +1,8 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import pc from "picocolors";
-import { cols } from "./layout.ts";
-import { type Theme, defaultTheme } from "./theme.ts";
+import { cols } from "dotllm/cli/layout";
+import { type Theme, defaultTheme } from "dotllm/cli/theme";
 
 export type OptionDef = {
   alias?: string;

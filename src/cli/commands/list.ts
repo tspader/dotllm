@@ -1,48 +1,44 @@
-import { Config } from "../../config.ts";
-import { table } from "../../shared/layout.ts";
-import { defaultTheme } from "../../shared/theme.ts";
-import type { CommandDef } from "../../shared/yargs.ts";
+import { Config } from "dotllm/core";
+import { table } from "dotllm/cli/layout";
+import { defaultTheme as t } from "dotllm/cli/theme";
+import type { CommandDef } from "dotllm/cli/yargs";
 
-export namespace ListCommand {
-  export function run(): void {
-    const global = Config.readGlobal();
+export const command: CommandDef = {
+  description: "List all registered repos",
+  summary: "Show the registry",
+  handler: () => {
+    const global = Config.Global.read();
 
     if (global.repos.length === 0) {
-      console.log(defaultTheme.dim("(no repos registered)"));
-      console.log(defaultTheme.dim("use `dotllm add <path>` to register one"));
+      console.log(t.dim("(no repos registered)"));
+      console.log(t.dim("use `dotllm add <path>` to register one"));
       return;
     }
 
-    const local = Config.readLocal();
+    const local = Config.Local.read();
     const linked = new Set(local.refs);
 
     table(
-      ["name", "path", "description", "linked"],
+      ["name", "kind", "uri", "description", "linked"],
       [
         global.repos.map((r) => r.name),
-        global.repos.map((r) => r.path),
+        global.repos.map((r) => r.kind),
+        global.repos.map((r) => r.uri),
         global.repos.map((r) => r.description),
-        global.repos.map((r) => linked.has(r.name) ? "yes" : ""),
+        global.repos.map((r) => linked.has(r.name) ? "yes" : "no"),
       ],
       {
-        flex: [0, 1, 1, 0],
-        noTruncate: [true, false, false, true],
-        truncate: ["end", "start", "end", "end"],
+        flex: [0, 0, 1, 1, 0],
+        noTruncate: [true, true, false, false, true],
+        truncate: ["end", "end", "start", "end", "end"],
         format: [
-          (s) => defaultTheme.primary(s),
-          (s) => defaultTheme.dim(s),
+          (s) => t.primary(s),
           (s) => s,
-          (s) => s.trim() === "yes" ? defaultTheme.success(s) : defaultTheme.dim(s),
+          (s) => t.link(s),
+          (s) => s,
+          (s) => s.trim() === "yes" ? t.success(s) : s,
         ],
       },
     );
-  }
-}
-
-export const list: CommandDef = {
-  description: "List all registered repos",
-  summary: "Show the global registry",
-  handler: () => {
-    ListCommand.run();
   },
 };

@@ -1,43 +1,28 @@
-import fs from "fs";
-import path from "path";
-import { Config } from "../../config.ts";
-import { defaultTheme } from "../../shared/theme.ts";
-import type { CommandDef } from "../../shared/yargs.ts";
+import { log } from "@clack/prompts";
+import { unlink } from "dotllm/core";
+import { defaultTheme as t } from "dotllm/cli/theme";
+import type { CommandDef } from "dotllm/cli/yargs";
 
-export namespace UnlinkCommand {
-  export const positionals = {
+export const command: CommandDef = {
+  description: "Remove a reference symlink from .llm/reference/",
+  summary: "Unlink a reference",
+  positionals: {
     name: {
-      type: "string" as const,
+      type: "string",
       description: "Name of the reference to unlink",
       required: true,
     },
-  };
+  },
+  handler: (argv) => {
+    const name = String(argv.name);
 
-  export function run(argv: Record<string, unknown>): void {
-    const name = String(argv.name ?? "");
-    const refDir = Config.refDir();
-    const target = path.join(refDir, name);
-
-    if (!fs.existsSync(target)) {
-      console.error(defaultTheme.error(`No symlink found: ${target}`));
+    const result = unlink(name);
+    if (!result.ok) {
+      log.error(t.error(result.error));
       process.exit(1);
+      return;
     }
 
-    fs.unlinkSync(target);
-
-    const local = Config.readLocal();
-    const refs = local.refs.filter((r) => r !== name);
-    Config.writeLocal({ refs });
-
-    console.log(`${defaultTheme.success("unlinked")} ${defaultTheme.primary(name)}`);
-  }
-}
-
-export const unlink: CommandDef = {
-  description: "Remove a symlink from .llm/reference/",
-  summary: "Unlink a reference",
-  positionals: UnlinkCommand.positionals,
-  handler: (argv) => {
-    UnlinkCommand.run(argv);
+    log.step(`unlinked ${t.primary(name)} -> ${t.link(`.llm/reference/${name}`)}`);
   },
 };
