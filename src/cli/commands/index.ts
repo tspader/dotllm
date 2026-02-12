@@ -1,5 +1,5 @@
-export { command as add } from "dotllm/cli/commands/add";
-export { command as remove } from "dotllm/cli/commands/remove";
-export { command as list } from "dotllm/cli/commands/list";
-export { command as link } from "dotllm/cli/commands/link";
-export { command as sync } from "dotllm/cli/commands/sync";
+export { command as add } from "@spader/dotllm/cli/commands/add";
+export { command as remove } from "@spader/dotllm/cli/commands/remove";
+export { command as list } from "@spader/dotllm/cli/commands/list";
+export { command as link } from "@spader/dotllm/cli/commands/link";
+export { command as sync } from "@spader/dotllm/cli/commands/sync";

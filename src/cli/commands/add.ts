@@ -2,9 +2,9 @@ import fs from "fs";
 import path from "path";
 import * as prompts from "@clack/prompts";
 import { z } from "zod";
-import { add } from "dotllm/core";
-import { defaultTheme as t } from "dotllm/cli/theme";
-import type { CommandDef } from "dotllm/cli/yargs";
+import { add } from "@spader/dotllm/core";
+import { defaultTheme as t } from "@spader/dotllm/cli/theme";
+import type { CommandDef } from "@spader/dotllm/cli/yargs";
 
 const RepoShape = z.object({
   description: z.string().nullable().optional(),

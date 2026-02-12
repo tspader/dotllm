@@ -5,7 +5,7 @@ Instead, keep a cache of such repositories and use `dotllm` to link them to `.ll
 
 # installation
 ```bash
-bun install -g dotllm
+bun install -g @spader/dotllm
 ```
 
 # usage

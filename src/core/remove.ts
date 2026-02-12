@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { Config } from "dotllm/core/config";
+import { Config } from "@spader/dotllm/core/config";
 
 export type RemoveResult = {
   ok: true;

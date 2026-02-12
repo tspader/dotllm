@@ -1,7 +1,7 @@
-import { Config } from "dotllm/core";
-import { table } from "dotllm/cli/layout";
-import { defaultTheme as t } from "dotllm/cli/theme";
-import type { CommandDef } from "dotllm/cli/yargs";
+import { Config } from "@spader/dotllm/core";
+import { table } from "@spader/dotllm/cli/layout";
+import { defaultTheme as t } from "@spader/dotllm/cli/theme";
+import type { CommandDef } from "@spader/dotllm/cli/yargs";
 
 export const command: CommandDef = {
   description: "List all registered repos",

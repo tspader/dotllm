@@ -1,7 +1,7 @@
 import * as prompts from "@clack/prompts";
-import { Config, link, type SyncResult } from "dotllm/core";
-import { defaultTheme as t } from "dotllm/cli/theme";
-import type { CommandDef } from "dotllm/cli/yargs";
+import { Config, link, type SyncResult } from "@spader/dotllm/core";
+import { defaultTheme as t } from "@spader/dotllm/cli/theme";
+import type { CommandDef } from "@spader/dotllm/cli/yargs";
 
 function printResult(result: SyncResult): void {
   for (const name of result.removed) {

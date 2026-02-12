@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { Config, type RepoEntry } from "dotllm/core/config";
+import { Config, type RepoEntry } from "@spader/dotllm/core/config";
 
 function isUrl(value: string): boolean {
   return value.startsWith("http://") ||

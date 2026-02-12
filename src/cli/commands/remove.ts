@@ -1,7 +1,7 @@
 import { log } from "@clack/prompts";
-import { remove } from "dotllm/core";
-import { defaultTheme as t } from "dotllm/cli/theme";
-import type { CommandDef } from "dotllm/cli/yargs";
+import { remove } from "@spader/dotllm/core";
+import { defaultTheme as t } from "@spader/dotllm/cli/theme";
+import type { CommandDef } from "@spader/dotllm/cli/yargs";
 
 export const command: CommandDef = {
   description: "Remove a repo from the registry",

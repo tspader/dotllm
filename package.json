@@ -1,6 +1,6 @@
 {
-  "name": "dotllm",
-  "version": "0.1.0",
+  "name": "@spader/dotllm",
+  "version": "1.0.0",
   "description": "A simple CLI to clone, manage, and link repositories for LLM reference",
   "type": "module",
   "bin": {

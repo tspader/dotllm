@@ -1,5 +1,5 @@
-import { Config } from "dotllm/core/config";
-import { sync, type SyncResult } from "dotllm/core/sync";
+import { Config } from "@spader/dotllm/core/config";
+import { sync, type SyncResult } from "@spader/dotllm/core/sync";
 
 export function link(names: string[]): SyncResult {
   const global = Config.Global.read();
