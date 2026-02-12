@@ -1,16 +1,39 @@
 {
   "name": "dotllm",
   "version": "0.1.0",
+  "description": "A simple CLI to clone, manage, and link repositories for LLM reference",
   "type": "module",
   "bin": {
     "dotllm": "src/cli/index.ts"
   },
+  "scripts": {
+    "check": "bunx tsc --noEmit",
+    "prepublishOnly": "bun run check"
+  },
+  "files": [
+    "src/**/*.ts",
+    "README.md"
+  ],
   "exports": {
     "./cli": "./src/cli/index.ts",
     "./cli/*": "./src/cli/*.ts",
     "./core": "./src/core/index.ts",
     "./core/*": "./src/core/*.ts"
   },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "cli",
+    "bun",
+    "dotfiles",
+    "symlink",
+    "llm"
+  ],
+  "license": "UNLICENSED",
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "picocolors": "^1.1.1",

@@ -9,9 +9,9 @@ const GLOBAL_DIR = path.join(
   "dotllm",
 );
 const STORE_DIR = path.join(GLOBAL_DIR, "store");
-const GLOBAL_FILE = path.join(GLOBAL_DIR, "llm.json");
+const GLOBAL_FILE = path.join(GLOBAL_DIR, "dotllm.json");
 const LOCAL_DIR = ".llm";
-const LOCAL_FILE = path.join(LOCAL_DIR, "llm.json");
+const LOCAL_FILE = path.join(LOCAL_DIR, "dotllm.json");
 const REF_DIR = path.join(LOCAL_DIR, "reference");
 
 const RepoEntry = z.object({
@@ -28,6 +28,10 @@ const GlobalShape = z.object({
 });
 
 const LocalShape = z.object({
+  refs: z.record(z.string(), RepoEntry),
+});
+
+const LocalLegacyShape = z.object({
   refs: z.array(z.string()),
 });
 
@@ -75,10 +79,22 @@ export namespace Config {
 
     export function read(): Shape {
       const raw = readJson(LOCAL_FILE);
-      if (!raw) return { refs: [] };
+      if (!raw) return { refs: {} };
       const result = LocalShape.safeParse(raw);
-      if (!result.success) return { refs: [] };
-      return result.data;
+      if (result.success) return result.data;
+      const legacy = LocalLegacyShape.safeParse(raw);
+      if (!legacy.success) return { refs: {} };
+
+      const global = Global.read();
+      const rows = legacy.data.refs
+        .map((name) => {
+          const repo = Global.find(global, name);
+          if (!repo) return null;
+          return [name, repo] as const;
+        })
+        .filter((row): row is readonly [string, RepoEntry] => row !== null);
+
+      return { refs: Object.fromEntries(rows) };
     }
 
     export function write(config: Shape): void {
@@ -87,16 +103,18 @@ export namespace Config {
     }
 
     export function has(config: Shape, name: string): boolean {
-      return config.refs.includes(name);
+      return Object.prototype.hasOwnProperty.call(config.refs, name);
     }
 
-    export function add(config: Shape, name: string): Shape {
-      if (config.refs.includes(name)) return config;
-      return { refs: [...config.refs, name] };
+    export function add(config: Shape, repo: RepoEntry): Shape {
+      return { refs: { ...config.refs, [repo.name]: repo } };
     }
 
     export function remove(config: Shape, name: string): Shape {
-      return { refs: config.refs.filter((r) => r !== name) };
+      const refs = Object.fromEntries(
+        Object.entries(config.refs).filter(([key]) => key !== name),
+      );
+      return { refs };
     }
   }
 }

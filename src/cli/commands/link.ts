@@ -25,7 +25,7 @@ export const command: CommandDef = {
     }
 
     const local = Config.Local.read();
-    const current = new Set(local.refs);
+    const current = new Set(Object.keys(local.refs));
 
     const selected = await prompts.multiselect({
       message: "Select repos to link into .llm/reference/",

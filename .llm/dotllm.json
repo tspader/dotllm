@@ -1,0 +1,22 @@
+{
+  "refs": {
+    "spn": {
+      "kind": "url",
+      "name": "spn",
+      "uri": "git@github.com:tspader/spn.git",
+      "description": ""
+    },
+    "opencode": {
+      "kind": "url",
+      "name": "opencode",
+      "uri": "git@github.com:anomalyco/opencode.git",
+      "description": ""
+    },
+    "sp": {
+      "kind": "url",
+      "name": "sp",
+      "uri": "git@github.com:tspader/sp.git",
+      "description": ""
+    }
+  }
+}

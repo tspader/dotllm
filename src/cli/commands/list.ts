@@ -16,7 +16,7 @@ export const command: CommandDef = {
     }
 
     const local = Config.Local.read();
-    const linked = new Set(local.refs);
+    const linked = new Set(Object.keys(local.refs));
 
     table(
       ["name", "kind", "uri", "description", "linked"],
