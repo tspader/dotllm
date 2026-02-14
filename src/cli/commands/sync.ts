@@ -1,9 +1,9 @@
 import * as prompts from "@clack/prompts";
 import { pull, sync } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
-import type { CommandDef } from "@spader/dotllm/cli/yargs";
+import type { Command } from "@spader/dotllm/cli/yargs";
 
-export const command: CommandDef = {
+export const command: Command = {
   description: "Re-create symlinks from .llm/dotllm.json",
   summary: "Sync symlinks from local config",
   handler: async () => {

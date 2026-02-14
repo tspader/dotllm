@@ -1,7 +1,7 @@
 import * as prompts from "@clack/prompts";
 import { Config, link, unlink, sync, type SyncResult } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
-import type { CommandDef } from "@spader/dotllm/cli/yargs";
+import type { Command } from "@spader/dotllm/cli/yargs";
 
 function printResult(result: SyncResult): void {
   const parts: string[] = [];
@@ -12,7 +12,7 @@ function printResult(result: SyncResult): void {
   prompts.log.step(parts.join(", "));
 }
 
-export const command: CommandDef = {
+export const command: Command = {
   description: "Interactively pick repos to link into .llm/reference/, or add/remove one by name",
   summary: "Link references",
   positionals: {

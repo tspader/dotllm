@@ -2,9 +2,9 @@ import path from "path";
 import fs from "fs";
 import { Config } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
-import type { CommandDef } from "@spader/dotllm/cli/yargs";
+import type { Command } from "@spader/dotllm/cli/yargs";
 
-export const command: CommandDef = {
+export const command: Command = {
   description: "Open a subshell in a repo's store directory",
   summary: "cd into a repo",
   positionals: {

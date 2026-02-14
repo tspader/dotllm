@@ -2,9 +2,9 @@ import * as prompts from "@clack/prompts";
 import { Config } from "@spader/dotllm/core";
 import { table } from "@spader/dotllm/cli/layout";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
-import type { CommandDef } from "@spader/dotllm/cli/yargs";
+import type { Command } from "@spader/dotllm/cli/yargs";
 
-export const command: CommandDef = {
+export const command: Command = {
   description: "List all registered repos",
   summary: "Show the registry",
   handler: () => {

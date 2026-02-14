@@ -1,9 +1,9 @@
 import * as prompts from "@clack/prompts";
 import { remove } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
-import type { CommandDef } from "@spader/dotllm/cli/yargs";
+import type { Command } from "@spader/dotllm/cli/yargs";
 
-export const command: CommandDef = {
+export const command: Command = {
   description: "Remove a repo from the registry",
   summary: "Remove a registered repo",
   positionals: {

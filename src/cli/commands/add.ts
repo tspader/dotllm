@@ -4,7 +4,7 @@ import * as prompts from "@clack/prompts";
 import { z } from "zod";
 import { add, Config } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
-import type { CommandDef } from "@spader/dotllm/cli/yargs";
+import type { Command } from "@spader/dotllm/cli/yargs";
 
 const RepoShape = z.object({
   description: z.string().nullable().optional(),
@@ -162,7 +162,7 @@ async function run(uri: string, name?: string, description?: string): Promise<vo
   autoLink(result.entry.name);
 }
 
-export const command: CommandDef = {
+export const command: Command = {
   description: "Register a git repo as a reference",
   summary: "Add a repo to the registry",
   positionals: {
