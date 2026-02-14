@@ -3,6 +3,13 @@
   "version": "1.1.0",
   "description": "A simple CLI to clone, manage, and link repositories for LLM reference",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tspader/dotllm"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "dotllm": "src/cli/index.ts"
   },
@@ -22,9 +29,6 @@
   },
   "engines": {
     "bun": ">=1.1.0"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "keywords": [
     "cli",

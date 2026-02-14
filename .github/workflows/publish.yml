@@ -4,7 +4,7 @@ on:
     tags: ["v*"]
 jobs:
   build:
-    uses: ./.github/workflows/ci.yml
+    uses: ./.github/workflows/build.yml
   publish:
     needs: build
     runs-on: ubuntu-24.04
@@ -20,5 +20,5 @@ jobs:
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
-      - run: npm publish --provenance
+      - run: npm publish --provenance --access public
         working-directory: .build
