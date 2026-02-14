@@ -1,21 +1,64 @@
 import * as prompts from "@clack/prompts";
-import { Config, link, type SyncResult } from "@spader/dotllm/core";
+import { Config, link, unlink, sync, type SyncResult } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
 import type { CommandDef } from "@spader/dotllm/cli/yargs";
 
 function printResult(result: SyncResult): void {
-  for (const name of result.removed) {
-    prompts.log.step(`unlinked ${t.primary(name)} -> ${t.link(`.llm/reference/${name}`)}`);
-  }
-  for (const name of result.linked) {
-    prompts.log.step(`linked ${t.primary(name)} -> ${t.link(`.llm/reference/${name}`)}`);
-  }
+  const parts: string[] = [];
+  if (result.linked.length > 0) parts.push(`${result.linked.length} added`);
+  if (result.removed.length > 0) parts.push(`${result.removed.length} removed`);
+  if (result.unchanged.length > 0) parts.push(`${result.unchanged.length} unchanged`);
+  if (parts.length === 0) return;
+  prompts.log.step(parts.join(", "));
 }
 
 export const command: CommandDef = {
-  description: "Interactively select repos to symlink into .llm/reference/",
-  summary: "Select and link references",
-  handler: async () => {
+  description: "Interactively pick repos to link into .llm/reference/, or add/remove one by name",
+  summary: "Link references",
+  positionals: {
+    name: {
+      type: "string",
+      description: "Name of the repo to link, or omit for interactive",
+    },
+  },
+  options: {
+    remove: {
+      alias: "r",
+      type: "boolean",
+      description: "Remove the link instead of adding it",
+    },
+  },
+  handler: async (argv) => {
+    prompts.intro("dotllm link");
+    const name = typeof argv.name === "string" && argv.name.length > 0 ? argv.name : undefined;
+    const shouldRemove = argv.remove === true;
+
+    if (name) {
+      if (shouldRemove) {
+        const result = unlink(name);
+        if (!result.ok) {
+          prompts.log.error(t.error(result.error));
+          process.exit(1);
+          return;
+        }
+        prompts.log.step(`unlinked ${t.primary(name)}`);
+        return;
+      }
+
+      const global = Config.Global.read();
+      const repo = Config.Global.find(global, name);
+      if (!repo) {
+        prompts.log.error(t.error(`No repo named "${name}" in registry`));
+        process.exit(1);
+        return;
+      }
+
+      const local = Config.Local.read();
+      Config.Local.write(Config.Local.add(local, repo));
+      printResult(sync());
+      return;
+    }
+
     const global = Config.Global.read();
 
     if (global.repos.length === 0) {

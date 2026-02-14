@@ -4,7 +4,7 @@ import pc from "picocolors";
 import { cols } from "@spader/dotllm/cli/layout";
 import { type Theme, defaultTheme } from "@spader/dotllm/cli/theme";
 
-export type OptionDef = {
+export type Option = {
   alias?: string;
   type: "string" | "number" | "boolean" | "array";
   description: string;
@@ -12,35 +12,35 @@ export type OptionDef = {
   default?: unknown;
 };
 
-export type Options = Record<string, OptionDef>;
+export type Options = Record<string, Option>;
 
-export type PositionalDef = {
+export type Positional = {
   type: "string" | "number";
   description: string;
   required?: boolean;
   default?: unknown;
 };
 
-export type Positionals = Record<string, PositionalDef>;
+export type Positionals = Record<string, Positional>;
 
-export type CommandDef = {
+export type Command = {
   description: string;
   summary?: string;
   hidden?: boolean;
   positionals?: Positionals;
   options?: Options;
-  commands?: Record<string, CommandDef>;
+  commands?: Record<string, Command>;
   handler?: (argv: Record<string, unknown>) => void | Promise<void>;
 };
 
-export type CliDef = {
+export type Cli = {
   name: string;
   description: string;
   options?: Options;
-  commands: Record<string, CommandDef>;
+  commands: Record<string, Command>;
 };
 
-function usage(def: CommandDef | CliDef, path: string[], t: Theme): string {
+function usage(def: Command | Cli, path: string[], t: Theme): string {
   const parts: string[] = [];
   const last = path.length - 1;
   for (let i = 0; i < path.length; i++) {
@@ -71,7 +71,7 @@ function usage(def: CommandDef | CliDef, path: string[], t: Theme): string {
 }
 
 export function help(
-  def: CommandDef | CliDef,
+  def: Command | Cli,
   name: string,
   path: string[] = [],
   t: Theme = defaultTheme,
@@ -105,7 +105,7 @@ export function help(
     cols(rows, [t.arg, t.type, t.description]);
   }
 
-  const opts: Record<string, OptionDef> = {
+  const opts: Record<string, Option> = {
     ...(def.options ?? {}),
     help: { alias: "h", type: "boolean", description: "Show help" },
   };
@@ -145,7 +145,7 @@ export function help(
   }
 }
 
-function fail(def: CommandDef | CliDef, name: string, path: string[] = []) {
+function fail(def: Command | Cli, name: string, path: string[] = []) {
   return (msg: string | null): void => {
     if (process.argv.includes("--help") || process.argv.includes("-h")) {
       help(def, name, path);
@@ -163,7 +163,7 @@ function fail(def: CommandDef | CliDef, name: string, path: string[] = []) {
   };
 }
 
-function check(def: CommandDef | CliDef, name: string, path: string[] = []) {
+function check(def: Command | Cli, name: string, path: string[] = []) {
   return (argv: Record<string, unknown>): boolean => {
     const args = argv as Record<string, unknown> & { _: unknown[]; help?: boolean };
     if (args.help && args._.length === path.length) {
@@ -176,7 +176,7 @@ function check(def: CommandDef | CliDef, name: string, path: string[] = []) {
 
 function configure(
   y: ReturnType<typeof yargs>,
-  def: CommandDef | CliDef,
+  def: Command | Cli,
   root: string,
   path: string[],
 ): void {
@@ -219,7 +219,7 @@ function configure(
 function command(
   y: ReturnType<typeof yargs>,
   name: string,
-  def: CommandDef,
+  def: Command,
   root: string,
   path: string[],
 ): void {
@@ -237,7 +237,7 @@ function command(
   );
 }
 
-export function build(def: CliDef): ReturnType<typeof yargs> {
+export function build(def: Cli): ReturnType<typeof yargs> {
   const y = yargs(hideBin(process.argv)).scriptName(def.name);
   configure(y, def, def.name, []);
   y.strict();

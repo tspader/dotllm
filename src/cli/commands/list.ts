@@ -1,3 +1,4 @@
+import * as prompts from "@clack/prompts";
 import { Config } from "@spader/dotllm/core";
 import { table } from "@spader/dotllm/cli/layout";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
@@ -7,6 +8,7 @@ export const command: CommandDef = {
   description: "List all registered repos",
   summary: "Show the registry",
   handler: () => {
+    prompts.intro("dotllm list");
     const global = Config.Global.read();
 
     if (global.repos.length === 0) {

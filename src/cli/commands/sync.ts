@@ -7,6 +7,7 @@ export const command: CommandDef = {
   description: "Re-create symlinks from .llm/dotllm.json",
   summary: "Sync symlinks from local config",
   handler: async () => {
+    prompts.intro("dotllm sync");
     const result = sync();
 
     if (result.linked.length === 0 && result.removed.length === 0 && result.missing.length === 0 && result.unchanged.length === 0) {
@@ -15,15 +16,12 @@ export const command: CommandDef = {
       return;
     }
 
-    for (const name of result.removed) {
-      prompts.log.step(`removed stale ${t.primary(name)}`);
-    }
-    for (const name of result.missing) {
-      prompts.log.warn(`${t.primary(name)} missing cache entry`);
-    }
-    for (const name of result.linked) {
-      prompts.log.step(`linked ${t.primary(name)} -> ${t.link(`.llm/reference/${name}`)}`);
-    }
+    const parts: string[] = [];
+    if (result.linked.length > 0) parts.push(`${result.linked.length} added`);
+    if (result.removed.length > 0) parts.push(`${result.removed.length} removed`);
+    if (result.unchanged.length > 0) parts.push(`${result.unchanged.length} unchanged`);
+    if (result.missing.length > 0) parts.push(`${result.missing.length} missing`);
+    if (parts.length > 0) prompts.log.step(parts.join(", "));
 
     const refs = [...new Set([...result.unchanged, ...result.linked])];
     if (refs.length === 0) {

@@ -18,5 +18,5 @@
       "@spader/dotllm/core/*": ["src/core/*"]
     }
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

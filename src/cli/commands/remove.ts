@@ -1,4 +1,4 @@
-import { log } from "@clack/prompts";
+import * as prompts from "@clack/prompts";
 import { remove } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
 import type { CommandDef } from "@spader/dotllm/cli/yargs";
@@ -14,15 +14,16 @@ export const command: CommandDef = {
     },
   },
   handler: (argv) => {
+    prompts.intro("dotllm remove");
     const name = String(argv.name);
 
     const result = remove(name);
     if (!result.ok) {
-      log.error(t.error(result.error));
+      prompts.log.error(t.error(result.error));
       process.exit(1);
       return;
     }
 
-    log.step(`removed ${t.primary(name)}`);
+    prompts.log.step(`removed ${t.primary(name)}`);
   },
 };

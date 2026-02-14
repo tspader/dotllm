@@ -2,17 +2,13 @@ import fs from "fs";
 import path from "path";
 import { z } from "zod";
 
-const GLOBAL_DIR = path.join(
-  process.env.HOME ?? "",
-  ".local",
-  "share",
-  "dotllm",
-);
-const STORE_DIR = path.join(GLOBAL_DIR, "store");
-const GLOBAL_FILE = path.join(GLOBAL_DIR, "dotllm.json");
 const LOCAL_DIR = ".llm";
 const LOCAL_FILE = path.join(LOCAL_DIR, "dotllm.json");
 const REF_DIR = path.join(LOCAL_DIR, "reference");
+
+function home(): string {
+  return path.join(process.env.HOME ?? "", ".local", "share", "dotllm");
+}
 
 const RepoEntry = z.object({
   kind: z.enum(["url", "file"]),
@@ -31,13 +27,9 @@ const LocalShape = z.object({
   refs: z.record(z.string(), RepoEntry),
 });
 
-const LocalLegacyShape = z.object({
-  refs: z.array(z.string()),
-});
-
 export namespace Config {
   export function storeDir(): string {
-    return STORE_DIR;
+    return path.join(home(), "store");
   }
 
   export function refDir(): string {
@@ -48,7 +40,7 @@ export namespace Config {
     export type Shape = z.infer<typeof GlobalShape>;
 
     export function read(): Shape {
-      const raw = readJson(GLOBAL_FILE);
+      const raw = readJson(path.join(home(), "dotllm.json"));
       if (!raw) return { repos: [] };
       const result = GlobalShape.safeParse(raw);
       if (!result.success) return { repos: [] };
@@ -56,8 +48,9 @@ export namespace Config {
     }
 
     export function write(config: Shape): void {
-      fs.mkdirSync(GLOBAL_DIR, { recursive: true });
-      fs.writeFileSync(GLOBAL_FILE, JSON.stringify(config, null, 2) + "\n");
+      const dir = home();
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, "dotllm.json"), JSON.stringify(config, null, 2) + "\n");
     }
 
     export function find(config: Shape, name: string): RepoEntry | undefined {
@@ -81,20 +74,8 @@ export namespace Config {
       const raw = readJson(LOCAL_FILE);
       if (!raw) return { refs: {} };
       const result = LocalShape.safeParse(raw);
-      if (result.success) return result.data;
-      const legacy = LocalLegacyShape.safeParse(raw);
-      if (!legacy.success) return { refs: {} };
-
-      const global = Global.read();
-      const rows = legacy.data.refs
-        .map((name) => {
-          const repo = Global.find(global, name);
-          if (!repo) return null;
-          return [name, repo] as const;
-        })
-        .filter((row): row is readonly [string, RepoEntry] => row !== null);
-
-      return { refs: Object.fromEntries(rows) };
+      if (!result.success) return { refs: {} };
+      return result.data;
     }
 
     export function write(config: Shape): void {
@@ -122,5 +103,9 @@ export namespace Config {
 function readJson(filepath: string): unknown {
   if (!fs.existsSync(filepath)) return null;
   const raw = fs.readFileSync(filepath, "utf-8");
-  return JSON.parse(raw);
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }

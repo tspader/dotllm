@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import * as prompts from "@clack/prompts";
 import { z } from "zod";
-import { add } from "@spader/dotllm/core";
+import { add, Config } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
 import type { CommandDef } from "@spader/dotllm/cli/yargs";
 
@@ -17,7 +17,7 @@ function isUrl(value: string): boolean {
     value.startsWith("ssh://");
 }
 
-function stem(value: string): string {
+export function stem(value: string): string {
   const clean = value.trim().replace(/\/+$/, "");
   if (clean.length === 0) return "";
 
@@ -40,7 +40,7 @@ function stem(value: string): string {
   return base;
 }
 
-function github(uri: string): { owner: string; repo: string } | null {
+export function github(uri: string): { owner: string; repo: string } | null {
   const https = uri.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/);
   if (https) {
     return { owner: https[1]!, repo: https[2]! };
@@ -103,7 +103,7 @@ async function prefill(uri: string): Promise<{ name: string; description: string
   return { name, description };
 }
 
-async function interactive(): Promise<void> {
+async function interactive(namePrefill?: string, descPrefill?: string): Promise<void> {
   const uri = await prompts.text({
     message: "URL or local path to a git repo",
   });
@@ -113,25 +113,45 @@ async function interactive(): Promise<void> {
   const seed = await prefill(input);
 
   const name = await prompts.text({
-    message: "Name (leave empty to auto-detect)",
-    defaultValue: seed.name,
+    message: "Name",
+    initialValue: namePrefill ?? seed.name,
   });
   if (prompts.isCancel(name)) return;
 
   const description = await prompts.text({
     message: "Description",
-    defaultValue: seed.description,
+    initialValue: descPrefill ?? seed.description,
   });
   if (prompts.isCancel(description)) return;
 
   await run(input, name || undefined, description || undefined);
 }
 
+function autoLink(name: string): void {
+  const localFile = path.join(".llm", "dotllm.json");
+  if (!fs.existsSync(localFile)) return;
+
+  const local = Config.Local.read();
+  if (Config.Local.has(local, name)) return;
+
+  const global = Config.Global.read();
+  const repo = Config.Global.find(global, name);
+  if (!repo) return;
+
+  Config.Local.write(Config.Local.add(local, repo));
+  prompts.log.step(`linked ${t.primary(name)}`);
+}
+
 async function run(uri: string, name?: string, description?: string): Promise<void> {
   const spinner = prompts.spinner();
   spinner.start(`Adding ${uri}`);
 
-  const result = await add(uri, name, description);
+  const needSeed = !name || !description;
+  const seed = needSeed ? await prefill(uri) : { name: "", description: "" };
+  const resolved = name ?? seed.name;
+  const desc = description ?? seed.description;
+
+  const result = await add(uri, resolved || undefined, desc || undefined);
   if (!result.ok) {
     spinner.stop(t.error(result.error), 1);
     process.exit(1);
@@ -139,6 +159,7 @@ async function run(uri: string, name?: string, description?: string): Promise<vo
   }
 
   spinner.stop(`${t.success("added")} ${t.primary(result.entry.name)} ${t.link(result.storePath)}`);
+  autoLink(result.entry.name);
 }
 
 export const command: CommandDef = {
@@ -163,15 +184,16 @@ export const command: CommandDef = {
     },
   },
   handler: async (argv) => {
+    prompts.intro("dotllm add");
     const uri = typeof argv.uri === "string" && argv.uri.length > 0 ? argv.uri : undefined;
+    const name = typeof argv.name === "string" && argv.name.length > 0 ? argv.name : undefined;
+    const description = typeof argv.description === "string" && argv.description.length > 0 ? argv.description : undefined;
 
     if (!uri) {
-      await interactive();
+      await interactive(name, description);
       return;
     }
 
-    const name = typeof argv.name === "string" && argv.name.length > 0 ? argv.name : undefined;
-    const description = typeof argv.description === "string" ? argv.description : undefined;
     await run(uri, name, description);
   },
 };
