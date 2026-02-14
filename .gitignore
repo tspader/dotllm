@@ -1,2 +1,3 @@
 .llm/reference
 node_modules
+.build
