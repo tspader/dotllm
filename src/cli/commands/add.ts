@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 import * as prompts from "@clack/prompts";
 import { z } from "zod";
-import { add, Config } from "@spader/dotllm/core";
+import { add, Config, sync } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
+import { Prompt } from "@spader/dotllm/cli/prompt";
 import type { Command } from "@spader/dotllm/cli/yargs";
 
 const RepoShape = z.object({
@@ -139,7 +140,7 @@ function autoLink(name: string): void {
   if (!repo) return;
 
   Config.Local.write(Config.Local.add(local, repo));
-  prompts.log.step(`linked ${t.primary(name)}`);
+  Prompt.sync(sync());
 }
 
 async function run(uri: string, name?: string, description?: string): Promise<void> {

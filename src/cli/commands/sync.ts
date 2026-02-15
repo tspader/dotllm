@@ -1,6 +1,7 @@
 import * as prompts from "@clack/prompts";
 import { pull, sync } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
+import { Prompt } from "@spader/dotllm/cli/prompt";
 import type { Command } from "@spader/dotllm/cli/yargs";
 
 export const command: Command = {
@@ -16,12 +17,7 @@ export const command: Command = {
       return;
     }
 
-    const parts: string[] = [];
-    if (result.linked.length > 0) parts.push(`${result.linked.length} added`);
-    if (result.removed.length > 0) parts.push(`${result.removed.length} removed`);
-    if (result.unchanged.length > 0) parts.push(`${result.unchanged.length} unchanged`);
-    if (result.missing.length > 0) parts.push(`${result.missing.length} missing`);
-    if (parts.length > 0) prompts.log.step(parts.join(", "));
+    Prompt.sync(result);
 
     const refs = [...new Set([...result.unchanged, ...result.linked])];
     if (refs.length === 0) {

@@ -1,16 +1,8 @@
 import * as prompts from "@clack/prompts";
-import { Config, link, unlink, sync, type SyncResult } from "@spader/dotllm/core";
+import { Config, link, unlink, sync } from "@spader/dotllm/core";
 import { defaultTheme as t } from "@spader/dotllm/cli/theme";
+import { Prompt } from "@spader/dotllm/cli/prompt";
 import type { Command } from "@spader/dotllm/cli/yargs";
-
-function printResult(result: SyncResult): void {
-  const parts: string[] = [];
-  if (result.linked.length > 0) parts.push(`${result.linked.length} added`);
-  if (result.removed.length > 0) parts.push(`${result.removed.length} removed`);
-  if (result.unchanged.length > 0) parts.push(`${result.unchanged.length} unchanged`);
-  if (parts.length === 0) return;
-  prompts.log.step(parts.join(", "));
-}
 
 export const command: Command = {
   description: "Interactively pick repos to link into .llm/reference/, or add/remove one by name",
@@ -55,7 +47,7 @@ export const command: Command = {
 
       const local = Config.Local.read();
       Config.Local.write(Config.Local.add(local, repo));
-      printResult(sync());
+      Prompt.sync(sync());
       return;
     }
 
@@ -92,6 +84,6 @@ export const command: Command = {
       ? selected.filter((value): value is string => typeof value === "string")
       : [];
 
-    printResult(link(names));
+    Prompt.sync(link(names));
   },
 };
