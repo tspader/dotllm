@@ -13,4 +13,8 @@
 - Never use `/tmp`; prefer `.llm/scratch`. Out-of-tree directory access forces manual approval, `.llm/scratch` lets you work autonomously
 - Never write utilities as Bash scripts; always use TypeScript + Bun
 - Never wrap `await foo()` in parentheses in an if statement
-- NEVER use the Glob tool without a path parameter
+- NEVER use the Glob tool without a path parameter; if none is needed, use "*"
+- Always make tests declarative rather than imperative. Tests describe filesystem state (repos, store entries, config), the `fixture()` function materializes it. No imperative setup.
+- Never use mocks. Tests call actual functions against temporary filesystems.
+- Always run tests in isolation. Each test gets its own HOME and cwd via fixture. Cleanup via `await using`.
+- Always build paths and read environment variables lazily e.g. `src/core/config.ts` reads `process.env.HOME` at call time, not import time. This is what makes per-test isolation work without preloads.

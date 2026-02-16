@@ -1,6 +1,6 @@
 {
   "name": "@spader/dotllm",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A simple CLI to clone, manage, and link repositories for LLM reference",
   "type": "module",
   "repository": {
@@ -14,6 +14,8 @@
     "dotllm": "src/cli/index.ts"
   },
   "scripts": {
+    "clean": "bun tools/clean.ts",
+    "build": "bun tools/build.ts",
     "check": "bunx tsc --noEmit",
     "prepublishOnly": "bun run check"
   },
@@ -26,6 +28,9 @@
     "./cli/*": "./src/cli/*.ts",
     "./core": "./src/core/index.ts",
     "./core/*": "./src/core/*.ts"
+  },
+  "imports": {
+    "#tools/*": "./tools/*.ts"
   },
   "engines": {
     "bun": ">=1.1.0"

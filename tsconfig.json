@@ -15,7 +15,8 @@
       "@spader/dotllm/cli": ["src/cli/index.ts"],
       "@spader/dotllm/cli/*": ["src/cli/*"],
       "@spader/dotllm/core": ["src/core/index.ts"],
-      "@spader/dotllm/core/*": ["src/core/*"]
+      "@spader/dotllm/core/*": ["src/core/*"],
+      "#tools/*": ["tools/*"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]

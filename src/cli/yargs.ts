@@ -36,6 +36,7 @@ export type Command = {
 export type Cli = {
   name: string;
   description: string;
+  version?: string;
   options?: Options;
   commands: Record<string, Command>;
 };
@@ -109,6 +110,9 @@ export function help(
     ...(def.options ?? {}),
     help: { alias: "h", type: "boolean", description: "Show help" },
   };
+  if ("version" in def && def.version) {
+    opts.version = { alias: "v", type: "boolean", description: "Show version" };
+  }
 
   if (Object.keys(opts).length > 0) {
     if (prev) console.log("");
@@ -214,6 +218,10 @@ function configure(
     .option("help", { alias: "h", type: "boolean", describe: "Show help" })
     .check(check(def, root, path))
     .fail(fail(def, root, path));
+
+  if (path.length === 0 && "version" in def && def.version) {
+    y.version(def.version).alias("version", "v");
+  }
 }
 
 function command(
