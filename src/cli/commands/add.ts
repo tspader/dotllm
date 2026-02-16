@@ -42,22 +42,46 @@ export function stem(value: string): string {
 }
 
 export function github(uri: string): { owner: string; repo: string } | null {
-  const https = uri.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/);
+  return hosted(uri, "github.com");
+}
+
+export function codeberg(uri: string): { owner: string; repo: string } | null {
+  return hosted(uri, "codeberg.org");
+}
+
+function hosted(uri: string, host: string): { owner: string; repo: string } | null {
+  const escaped = host.replace(/\./g, "\\.");
+  const https = uri.match(new RegExp(`^https?:\\/\\/${escaped}\\/([^/]+)\\/([^/]+?)(?:\\.git)?\\/?$`));
   if (https) {
     return { owner: https[1]!, repo: https[2]! };
   }
 
-  const ssh = uri.match(/^ssh:\/\/git@github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/);
+  const ssh = uri.match(new RegExp(`^ssh:\\/\\/git@${escaped}\\/([^/]+)\\/([^/]+?)(?:\\.git)?\\/?$`));
   if (ssh) {
     return { owner: ssh[1]!, repo: ssh[2]! };
   }
 
-  const scp = uri.match(/^git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/);
+  const scp = uri.match(new RegExp(`^git@${escaped}:([^/]+)\\/([^/]+?)(?:\\.git)?$`));
   if (scp) {
     return { owner: scp[1]!, repo: scp[2]! };
   }
 
   return null;
+}
+
+async function apiDescription(url: string, accept: string): Promise<string> {
+  const response = await fetch(url, {
+    headers: {
+      accept,
+      "user-agent": "dotllm",
+    },
+  });
+  if (!response.ok) return "";
+
+  const raw = await response.json();
+  const result = RepoShape.safeParse(raw);
+  if (!result.success) return "";
+  return result.data.description ?? "";
 }
 
 function gitName(uri: string): string {
@@ -78,22 +102,19 @@ function gitName(uri: string): string {
 }
 
 async function remoteDescription(uri: string): Promise<string> {
-  const repo = github(uri);
-  if (!repo) return "";
+  const gh = github(uri);
+  if (gh) {
+    const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}`;
+    return apiDescription(url, "application/vnd.github+json");
+  }
 
-  const url = `https://api.github.com/repos/${repo.owner}/${repo.repo}`;
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/vnd.github+json",
-      "user-agent": "dotllm",
-    },
-  });
-  if (!response.ok) return "";
+  const cb = codeberg(uri);
+  if (cb) {
+    const url = `https://codeberg.org/api/v1/repos/${cb.owner}/${cb.repo}`;
+    return apiDescription(url, "application/json");
+  }
 
-  const raw = await response.json();
-  const result = RepoShape.safeParse(raw);
-  if (!result.success) return "";
-  return result.data.description ?? "";
+  return "";
 }
 
 async function prefill(uri: string): Promise<{ name: string; description: string }> {

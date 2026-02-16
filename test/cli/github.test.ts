@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test"
-import { github } from "@spader/dotllm/cli/commands/add"
+import { codeberg, github } from "@spader/dotllm/cli/commands/add"
 
 test("HTTPS with .git", () => {
   expect(github("https://github.com/acme/foo.git")).toEqual({ owner: "acme", repo: "foo" })
@@ -36,4 +36,20 @@ test("malformed returns null", () => {
 
 test("extra path segments returns null", () => {
   expect(github("https://github.com/acme/foo/tree/main")).toBeNull()
+})
+
+test("Codeberg HTTPS with .git", () => {
+  expect(codeberg("https://codeberg.org/acme/foo.git")).toEqual({ owner: "acme", repo: "foo" })
+})
+
+test("Codeberg SSH SCP", () => {
+  expect(codeberg("git@codeberg.org:acme/foo.git")).toEqual({ owner: "acme", repo: "foo" })
+})
+
+test("Codeberg SSH URL", () => {
+  expect(codeberg("ssh://git@codeberg.org/acme/foo.git")).toEqual({ owner: "acme", repo: "foo" })
+})
+
+test("non-Codeberg returns null", () => {
+  expect(codeberg("https://github.com/acme/foo.git")).toBeNull()
 })
