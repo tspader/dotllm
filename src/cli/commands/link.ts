@@ -61,15 +61,16 @@ export const command: Command = {
 
     const local = Config.Local.read();
     const current = new Set(Object.keys(local.refs));
+    const repos = [...global.repos].sort((a, b) => a.name.localeCompare(b.name));
 
     const selected = await prompts.multiselect({
       message: "Select repos to link into .llm/reference/",
-      options: global.repos.map((r) => ({
+      options: repos.map((r) => ({
         value: r.name,
         label: r.name,
         hint: r.uri,
       })),
-      initialValues: global.repos
+      initialValues: repos
         .filter((r) => current.has(r.name))
         .map((r) => r.name),
       required: false,
