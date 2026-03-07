@@ -29,7 +29,7 @@ export const command: Command = {
 
     const pulled = await pull(refs);
     if (pulled.failed.length > 0) {
-      spinner.stop(t.error(`pull failed for ${pulled.failed.length} repo${pulled.failed.length === 1 ? "" : "s"}`), 1);
+      spinner.stop(t.error(`pull failed for ${pulled.failed.length} repo${pulled.failed.length === 1 ? "" : "s"}`));
       process.exit(1);
       return;
     }

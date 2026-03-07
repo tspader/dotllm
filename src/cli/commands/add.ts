@@ -175,7 +175,7 @@ async function run(uri: string, name?: string, description?: string): Promise<vo
 
   const result = await add(uri, resolved || undefined, desc || undefined);
   if (!result.ok) {
-    spinner.stop(t.error(result.error), 1);
+    spinner.stop(t.error(result.error));
     process.exit(1);
     return;
   }
