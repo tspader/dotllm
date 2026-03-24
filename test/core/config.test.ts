@@ -7,8 +7,14 @@ import { Config, type RepoEntry } from "@spader/dotllm/core/config"
 const foo: RepoEntry = { kind: "file", name: "foo", uri: "/mock/foo", description: "foo lib" }
 const bar: RepoEntry = { kind: "url", name: "bar", uri: "https://example.com/bar", description: "" }
 
+function globalDir(root: string): string {
+  return process.platform === "win32"
+    ? path.join(root, "dotllm")
+    : path.join(root, ".local", "share", "dotllm")
+}
+
 function seedGlobal(root: string, content: string): void {
-  const dir = path.join(root, ".local", "share", "dotllm")
+  const dir = globalDir(root)
   fs.mkdirSync(dir, { recursive: true })
   fs.writeFileSync(path.join(dir, "dotllm.json"), content)
 }
@@ -130,7 +136,7 @@ test("local read returns default on schema-invalid JSON", async () => {
 
 test("storeDir returns path under HOME", async () => {
   await using env = await fixture()
-  expect(Config.storeDir()).toBe(path.join(env.path, ".local", "share", "dotllm", "store"))
+  expect(Config.storeDir()).toBe(path.join(globalDir(env.path), "store"))
 })
 
 test("refDir returns .llm/reference", () => {

@@ -1,3 +1,5 @@
 .llm/reference
 node_modules
 .build
+/mutagen.yml
+/mutagen.yml.lock

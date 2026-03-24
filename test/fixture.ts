@@ -24,9 +24,13 @@ type Env = {
 
 export async function fixture(state: State = {}): Promise<Env> {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "dotllm-")))
-  const prev = process.env.HOME
+  const prevHome = process.env.HOME
+  const prevAppData = process.env.LOCALAPPDATA
   const cwd = process.cwd()
   process.env.HOME = root
+  if (process.platform === "win32") {
+    process.env.LOCALAPPDATA = root
+  }
   process.chdir(root)
 
   const git = { stdout: "pipe" as const, stderr: "pipe" as const }
@@ -81,7 +85,10 @@ export async function fixture(state: State = {}): Promise<Env> {
     path: root,
     dir(name: string) { return path.join(root, name) },
     async [Symbol.asyncDispose]() {
-      process.env.HOME = prev
+      process.env.HOME = prevHome
+      if (process.platform === "win32") {
+        process.env.LOCALAPPDATA = prevAppData
+      }
       process.chdir(cwd)
       fs.rmSync(root, { recursive: true, force: true })
     },

@@ -1,4 +1,5 @@
 import fs from "fs";
+import os from "os";
 import path from "path";
 import { z } from "zod";
 
@@ -7,7 +8,11 @@ const LOCAL_FILE = path.join(LOCAL_DIR, "dotllm.json");
 const REF_DIR = path.join(LOCAL_DIR, "reference");
 
 function home(): string {
-  return path.join(process.env.HOME ?? "", ".local", "share", "dotllm");
+  if (process.platform === "win32") {
+    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local");
+    return path.join(appData, "dotllm");
+  }
+  return path.join(process.env.HOME ?? os.homedir(), ".local", "share", "dotllm");
 }
 
 const RepoEntry = z.object({
