@@ -10,13 +10,12 @@
     "esModuleInterop": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
-    "baseUrl": ".",
     "paths": {
-      "@spader/dotllm/cli": ["src/cli/index.ts"],
-      "@spader/dotllm/cli/*": ["src/cli/*"],
-      "@spader/dotllm/core": ["src/core/index.ts"],
-      "@spader/dotllm/core/*": ["src/core/*"],
-      "#tools/*": ["tools/*"]
+      "@spader/dotllm/cli": ["./src/cli/index.ts"],
+      "@spader/dotllm/cli/*": ["./src/cli/*"],
+      "@spader/dotllm/core": ["./src/core/index.ts"],
+      "@spader/dotllm/core/*": ["./src/core/*"],
+      "#tools/*": ["./tools/*"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]
