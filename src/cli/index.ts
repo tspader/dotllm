@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { build, type Cli } from "@spader/dotllm/cli/yargs";
-import { add, remove, list, link, sync, which, cd } from "@spader/dotllm/cli/commands/index";
+import { add, remove, list, link, sync, which, completions } from "@spader/dotllm/cli/commands/index";
 
 export namespace DotLlmCli {
   export async function run(): Promise<void> {
@@ -19,7 +19,7 @@ export namespace DotLlmCli {
         link,
         sync,
         which,
-        cd,
+        completions,
       },
     };
 

@@ -211,7 +211,10 @@ function configure(
     for (const [k, v] of Object.entries(def.commands)) {
       command(y, k, v, root, path);
     }
-    y.demandCommand(1, "You must specify a command");
+    const hasHandler = "handler" in def && typeof def.handler === "function";
+    if (!hasHandler) {
+      y.demandCommand(1, "You must specify a command");
+    }
   }
 
   y.help(false)
