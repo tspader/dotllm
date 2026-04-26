@@ -23,8 +23,9 @@ export const command: Command = {
       return;
     }
 
+    const lower = name.toLowerCase();
     const matches = global.repos
-      .filter((r) => r.name.startsWith(name))
+      .filter((r) => r.name.toLowerCase().startsWith(lower))
       .sort((a, b) => a.name.length - b.name.length);
 
     if (matches.length === 0) {

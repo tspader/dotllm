@@ -7,7 +7,7 @@ export function link(names: string[]): SyncResult {
     .map((name) => {
       const repo = Config.Global.find(global, name);
       if (!repo) return null;
-      return [name, repo] as const;
+      return [repo.name, repo] as const;
     })
     .filter((row): row is readonly [string, (typeof global.repos)[number]] => row !== null);
 

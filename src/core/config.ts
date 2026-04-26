@@ -59,16 +59,19 @@ export namespace Config {
     }
 
     export function find(config: Shape, name: string): RepoEntry | undefined {
-      return config.repos.find((r) => r.name === name);
+      const lower = name.toLowerCase();
+      return config.repos.find((r) => r.name.toLowerCase() === lower);
     }
 
     export function add(config: Shape, entry: RepoEntry): Shape {
-      const filtered = config.repos.filter((r) => r.name !== entry.name);
+      const lower = entry.name.toLowerCase();
+      const filtered = config.repos.filter((r) => r.name.toLowerCase() !== lower);
       return { repos: [...filtered, entry] };
     }
 
     export function remove(config: Shape, name: string): Shape {
-      return { repos: config.repos.filter((r) => r.name !== name) };
+      const lower = name.toLowerCase();
+      return { repos: config.repos.filter((r) => r.name.toLowerCase() !== lower) };
     }
   }
 
@@ -88,17 +91,31 @@ export namespace Config {
       fs.writeFileSync(LOCAL_FILE, JSON.stringify(config, null, 2) + "\n");
     }
 
+    export function find(config: Shape, name: string): RepoEntry | undefined {
+      const lower = name.toLowerCase();
+      for (const [key, value] of Object.entries(config.refs)) {
+        if (key.toLowerCase() === lower) return value;
+      }
+      return undefined;
+    }
+
     export function has(config: Shape, name: string): boolean {
-      return Object.prototype.hasOwnProperty.call(config.refs, name);
+      return find(config, name) !== undefined;
     }
 
     export function add(config: Shape, repo: RepoEntry): Shape {
-      return { refs: { ...config.refs, [repo.name]: repo } };
+      const lower = repo.name.toLowerCase();
+      const refs = Object.fromEntries(
+        Object.entries(config.refs).filter(([key]) => key.toLowerCase() !== lower),
+      );
+      refs[repo.name] = repo;
+      return { refs };
     }
 
     export function remove(config: Shape, name: string): Shape {
+      const lower = name.toLowerCase();
       const refs = Object.fromEntries(
-        Object.entries(config.refs).filter(([key]) => key !== name),
+        Object.entries(config.refs).filter(([key]) => key.toLowerCase() !== lower),
       );
       return { refs };
     }

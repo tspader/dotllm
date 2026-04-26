@@ -17,7 +17,7 @@ export function remove(name: string): RemoveResult {
     return { ok: false, error: `No repo named "${name}" in registry` };
   }
 
-  const target = path.join(Config.storeDir(), name);
+  const target = path.join(Config.storeDir(), found.name);
   if (fs.existsSync(target)) {
     const stat = fs.lstatSync(target);
     if (stat.isSymbolicLink()) {
@@ -28,6 +28,6 @@ export function remove(name: string): RemoveResult {
     }
   }
 
-  Config.Global.write(Config.Global.remove(global, name));
+  Config.Global.write(Config.Global.remove(global, found.name));
   return { ok: true };
 }
