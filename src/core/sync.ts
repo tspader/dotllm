@@ -10,9 +10,15 @@ export type SyncResult = {
 };
 
 type PullState = {
+  kind: "ok";
+} | {
+  kind: "skipped";
+  name: string;
+} | {
+  kind: "failed";
   name: string;
   error: string;
-} | null;
+};
 
 export type PullError = {
   name: string;
@@ -21,40 +27,108 @@ export type PullError = {
 
 export type PullResult = {
   count: number;
+  pulled: string[];
+  skipped: string[];
   failed: PullError[];
 };
 
-export async function pull(names: string[]): Promise<PullResult> {
+export type PullOptions = {
+  force?: boolean;
+};
+
+const FRESH_MS = 24 * 60 * 60 * 1000;
+const STALE_MS = 7 * FRESH_MS;
+
+function shouldPull(storeDir: string, force: boolean): boolean {
+  if (force) return true;
+  const head = path.join(storeDir, ".git", "HEAD");
+  const headStat = fs.statSync(head, { throwIfNoEntry: false });
+  if (!headStat) return true;
+
+  const age = Date.now() - headStat.mtimeMs;
+  if (age < FRESH_MS) return false;
+  if (age > STALE_MS) return true;
+
+  const dirStat = fs.statSync(storeDir, { throwIfNoEntry: false });
+  if (!dirStat) return true;
+  return dirStat.atimeMs > headStat.mtimeMs;
+}
+
+export async function pull(names: string[], options: PullOptions = {}): Promise<PullResult> {
+  const force = options.force === true;
+  const global = Config.Global.read();
+
   const states = await Promise.all(
     names.map(async (name): Promise<PullState> => {
       const cwd = path.join(Config.refDir(), name);
       if (!fs.existsSync(cwd)) {
-        return { name, error: "reference directory missing" };
+        return { kind: "failed", name, error: "reference directory missing" };
       }
 
-      const proc = Bun.spawn(["git", "pull", "--ff-only"], {
+      const repo = Config.Global.find(global, name);
+      if (repo && repo.kind === "file") {
+        return { kind: "skipped", name };
+      }
+
+      const storeDir = path.join(Config.storeDir(), name);
+      const storeStat = fs.lstatSync(storeDir, { throwIfNoEntry: false });
+      if (!storeStat || storeStat.isSymbolicLink()) {
+        return { kind: "skipped", name };
+      }
+
+      if (!fs.existsSync(path.join(storeDir, ".git"))) {
+        return { kind: "failed", name, error: "store directory is not a git repo" };
+      }
+
+      if (!shouldPull(storeDir, force)) {
+        return { kind: "skipped", name };
+      }
+
+      const fetch = Bun.spawn(["git", "fetch", "--depth=1", "origin", "HEAD"], {
         cwd,
         stdout: "pipe",
         stderr: "pipe",
       });
-      const [code, out, err] = await Promise.all([
-        proc.exited,
-        new Response(proc.stdout).text(),
-        new Response(proc.stderr).text(),
+      const [fetchCode, fetchOut, fetchErr] = await Promise.all([
+        fetch.exited,
+        new Response(fetch.stdout).text(),
+        new Response(fetch.stderr).text(),
       ]);
-      const msg = `${out}\n${err}`.trim();
-
-      if (code !== 0) {
-        return { name, error: msg || "git pull failed" };
+      if (fetchCode !== 0) {
+        const msg = `${fetchOut}\n${fetchErr}`.trim();
+        return { kind: "failed", name, error: msg || "git fetch failed" };
       }
 
-      return null;
+      const reset = Bun.spawn(["git", "reset", "--hard", "FETCH_HEAD"], {
+        cwd,
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+      const [resetCode, resetOut, resetErr] = await Promise.all([
+        reset.exited,
+        new Response(reset.stdout).text(),
+        new Response(reset.stderr).text(),
+      ]);
+      if (resetCode !== 0) {
+        const msg = `${resetOut}\n${resetErr}`.trim();
+        return { kind: "failed", name, error: msg || "git reset failed" };
+      }
+
+      return { kind: "ok" };
     }),
   );
 
-  const failed = states.filter((state): state is PullError => state !== null);
+  const pulled: string[] = [];
+  const skipped: string[] = [];
+  const failed: PullError[] = [];
+  for (let i = 0; i < states.length; i++) {
+    const state = states[i]!;
+    if (state.kind === "ok") pulled.push(names[i]!);
+    if (state.kind === "skipped") skipped.push(state.name);
+    if (state.kind === "failed") failed.push({ name: state.name, error: state.error });
+  }
 
-  return { count: names.length, failed };
+  return { count: names.length, pulled, skipped, failed };
 }
 
 export function sync(): SyncResult {
@@ -90,12 +164,13 @@ export function sync(): SyncResult {
 
   for (const [name, repo] of Object.entries(local.refs)) {
     const store = path.join(Config.storeDir(), name);
-    if (!fs.existsSync(store)) {
+    const storeBroken = repo.kind === "url" && fs.existsSync(store) && !fs.existsSync(path.join(store, ".git"));
+    if (storeBroken) {
       fs.rmSync(store, { recursive: true, force: true });
     }
 
     if (!fs.existsSync(store) && repo.kind === "url") {
-      const clone = Bun.spawnSync(["git", "clone", repo.uri, store], {
+      const clone = Bun.spawnSync(["git", "clone", "--depth=1", repo.uri, store], {
         stdout: "pipe",
         stderr: "pipe",
       });

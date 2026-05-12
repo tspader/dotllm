@@ -52,7 +52,7 @@ async function cloneUrl(url: string, name: string | undefined, description: stri
   const target = path.join(store, resolved);
 
   if (!fs.existsSync(target)) {
-    const proc = Bun.spawn(["git", "clone", url, target], {
+    const proc = Bun.spawn(["git", "clone", "--depth=1", url, target], {
       stdout: "pipe",
       stderr: "pipe",
     });

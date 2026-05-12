@@ -7,7 +7,14 @@ import type { Command } from "@spader/dotllm/cli/yargs";
 export const command: Command = {
   description: "Re-create symlinks from .llm/dotllm.json",
   summary: "Sync symlinks from local config",
-  handler: async () => {
+  options: {
+    force: {
+      alias: "f",
+      type: "boolean",
+      description: "Pull all repos regardless of recent access",
+    },
+  },
+  handler: async (argv) => {
     prompts.intro("dotllm sync");
     const result = sync();
 
@@ -24,16 +31,20 @@ export const command: Command = {
       return;
     }
 
+    const force = argv.force === true;
     const spinner = prompts.spinner();
-    spinner.start(`Pulling ${refs.length} linked repo${refs.length === 1 ? "" : "s"}`);
+    spinner.start(`Checking ${refs.length} linked repo${refs.length === 1 ? "" : "s"}`);
 
-    const pulled = await pull(refs);
+    const pulled = await pull(refs, { force });
     if (pulled.failed.length > 0) {
       spinner.stop(t.error(`pull failed for ${pulled.failed.length} repo${pulled.failed.length === 1 ? "" : "s"}`));
       process.exit(1);
       return;
     }
 
-    spinner.stop(`${t.success("pulled")} ${pulled.count} repo${pulled.count === 1 ? "" : "s"}`);
+    const parts: string[] = [];
+    if (pulled.pulled.length > 0) parts.push(`${t.success("pulled")} ${pulled.pulled.length}`);
+    if (pulled.skipped.length > 0) parts.push(t.dim(`${pulled.skipped.length} skipped`));
+    spinner.stop(parts.length > 0 ? parts.join(" ") : t.dim("nothing to pull"));
   },
 };

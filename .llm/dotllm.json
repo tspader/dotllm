@@ -5,6 +5,18 @@
       "name": "opencode",
       "uri": "git@github.com:anomalyco/opencode.git",
       "description": ""
+    },
+    "fibs": {
+      "kind": "url",
+      "name": "fibs",
+      "uri": "https://github.com/floooh/fibs",
+      "description": "Typescript based cmake wrapper and task runner"
+    },
+    "diffview.nvim": {
+      "kind": "url",
+      "name": "diffview.nvim",
+      "uri": "git@github.com:sindrets/diffview.nvim.git",
+      "description": "Single tabpage interface for easily cycling through diffs for all modified files for any git rev."
     }
   }
 }
