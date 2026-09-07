@@ -71,7 +71,7 @@ complete -c dotllm -n "__fish_seen_subcommand_from which link" -a "(dotllm compl
 const CANARY = "@dotllm_completions";
 
 function completionFile(shell: string): string {
-  return path.join(path.dirname(Config.storeDir()), `completions.${shell}`);
+  return path.join(Config.home(), `completions.${shell}`);
 }
 
 function hookSnippet(shell: string): string {

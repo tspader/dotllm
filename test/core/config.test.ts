@@ -1,4 +1,5 @@
 import fs from "fs"
+import os from "os"
 import path from "path"
 import { test, expect } from "bun:test"
 import { fixture } from "../fixture"
@@ -137,6 +138,49 @@ test("local read returns default on schema-invalid JSON", async () => {
 test("storeDir returns path under HOME", async () => {
   await using env = await fixture()
   expect(Config.storeDir()).toBe(path.join(globalDir(env.path), "store"))
+})
+
+test("storeDir returns configured absolute path", async () => {
+  await using env = await fixture()
+  const dir = path.join(env.path, "drive", "llm")
+  Config.Global.write({ store: dir, repos: [] })
+  expect(Config.storeDir()).toBe(dir)
+})
+
+test("storeDir resolves configured relative path against home", async () => {
+  await using env = await fixture({ storeDir: path.join("..", "shared") })
+  expect(Config.storeDir()).toBe(path.join(path.dirname(globalDir(env.path)), "shared"))
+})
+
+test("storeDir expands a leading tilde", async () => {
+  await using env = await fixture({ storeDir: path.join("~", "llm-store") })
+  expect(Config.storeDir()).toBe(path.join(os.homedir(), "llm-store"))
+})
+
+test("storeDir ignores an empty configured path", async () => {
+  await using env = await fixture({ storeDir: "" })
+  expect(Config.storeDir()).toBe(path.join(globalDir(env.path), "store"))
+})
+
+test("global write round-trips the store path", async () => {
+  await using env = await fixture()
+  Config.Global.write({ store: "/mnt/llm", repos: [foo] })
+  expect(Config.Global.read()).toEqual({ store: "/mnt/llm", repos: [foo] })
+})
+
+test("global add preserves the store path", () => {
+  const result = Config.Global.add({ store: "/mnt/llm", repos: [foo] }, bar)
+  expect(result).toEqual({ store: "/mnt/llm", repos: [foo, bar] })
+})
+
+test("global remove preserves the store path", () => {
+  const result = Config.Global.remove({ store: "/mnt/llm", repos: [foo, bar] }, "foo")
+  expect(result).toEqual({ store: "/mnt/llm", repos: [bar] })
+})
+
+test("home is the config directory", async () => {
+  await using env = await fixture()
+  expect(Config.home()).toBe(globalDir(env.path))
 })
 
 test("refDir returns .llm/reference", () => {
