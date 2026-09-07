@@ -12,6 +12,7 @@ type Repo = {
 type State = {
   repos?: Record<string, Repo>
   store?: Record<string, string | true>
+  storeDir?: string
   global?: RepoEntry[]
   local?: string[]
 }
@@ -54,8 +55,8 @@ export async function fixture(state: State = {}): Promise<Env> {
     }
   }
 
-  if (state.global) {
-    Config.Global.write({ repos: state.global })
+  if (state.global || state.storeDir) {
+    Config.Global.write({ store: state.storeDir, repos: state.global ?? [] })
   }
 
   if (state.store) {

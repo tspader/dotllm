@@ -39,3 +39,15 @@ Check in `.llm/dotllm.json`. Then, on a fresh clone, link the repositories to yo
 ```bash
 dotllm sync
 ```
+
+# configuration
+The registry lives at `~/.local/share/dotllm/dotllm.json` (`%LOCALAPPDATA%\dotllm\dotllm.json` on Windows). Set `store` to keep the repositories somewhere else, e.g. another drive
+
+```json
+{
+  "store": "/mnt/big/llm",
+  "repos": []
+}
+```
+
+`~` is expanded, and a relative path resolves against the config directory. Existing repositories are not moved; either move them yourself or `dotllm sync` to re-clone.

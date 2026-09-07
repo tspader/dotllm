@@ -178,3 +178,20 @@ test("dir with no git remote falls back to basename", async () => {
   if (!result.ok) return
   expect(result.entry.name).toBe("plain-dir")
 })
+
+test("adds into the configured store directory", async () => {
+  await using env = await fixture({
+    repos: { "my-lib": {} },
+    storeDir: path.join("..", "..", "..", "drive", "llm"),
+  })
+
+  const result = await add(env.dir("my-lib"))
+
+  expect(result.ok).toBe(true)
+  if (!result.ok) return
+
+  const store = path.join(env.path, "drive", "llm", "my-lib")
+  expect(result.storePath).toBe(store)
+  expect(fs.readlinkSync(store)).toBe(env.dir("my-lib"))
+  expect(Config.Global.read().store).toBe(path.join("..", "..", "..", "drive", "llm"))
+})

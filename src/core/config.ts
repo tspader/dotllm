@@ -7,14 +7,6 @@ const LOCAL_DIR = ".llm";
 const LOCAL_FILE = path.join(LOCAL_DIR, "dotllm.json");
 const REF_DIR = path.join(LOCAL_DIR, "reference");
 
-function home(): string {
-  if (process.platform === "win32") {
-    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local");
-    return path.join(appData, "dotllm");
-  }
-  return path.join(process.env.HOME ?? os.homedir(), ".local", "share", "dotllm");
-}
-
 const RepoEntry = z.object({
   kind: z.enum(["url", "file"]),
   name: z.string(),
@@ -25,6 +17,7 @@ const RepoEntry = z.object({
 export type RepoEntry = z.infer<typeof RepoEntry>;
 
 const GlobalShape = z.object({
+  store: z.string().optional(),
   repos: z.array(RepoEntry),
 });
 
@@ -33,8 +26,18 @@ const LocalShape = z.object({
 });
 
 export namespace Config {
+  export function home(): string {
+    if (process.platform === "win32") {
+      const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local");
+      return path.join(appData, "dotllm");
+    }
+    return path.join(process.env.HOME ?? os.homedir(), ".local", "share", "dotllm");
+  }
+
   export function storeDir(): string {
-    return path.join(home(), "store");
+    const store = Global.read().store;
+    if (!store) return path.join(home(), "store");
+    return expand(store);
   }
 
   export function refDir(): string {
@@ -66,12 +69,12 @@ export namespace Config {
     export function add(config: Shape, entry: RepoEntry): Shape {
       const lower = entry.name.toLowerCase();
       const filtered = config.repos.filter((r) => r.name.toLowerCase() !== lower);
-      return { repos: [...filtered, entry] };
+      return { ...config, repos: [...filtered, entry] };
     }
 
     export function remove(config: Shape, name: string): Shape {
       const lower = name.toLowerCase();
-      return { repos: config.repos.filter((r) => r.name.toLowerCase() !== lower) };
+      return { ...config, repos: config.repos.filter((r) => r.name.toLowerCase() !== lower) };
     }
   }
 
@@ -119,6 +122,12 @@ export namespace Config {
       );
       return { refs };
     }
+  }
+
+  function expand(dir: string): string {
+    const tilde = dir === "~" || dir.startsWith("~/") || dir.startsWith("~\\");
+    if (!tilde) return path.resolve(home(), dir);
+    return path.join(os.homedir(), dir.slice(1));
   }
 }
 
