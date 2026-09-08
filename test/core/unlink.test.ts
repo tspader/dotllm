@@ -76,3 +76,19 @@ test("updates local config on disk", async () => {
   expect(Config.Local.has(local, "a")).toBe(false)
   expect(Object.keys(local.refs)).toHaveLength(0)
 })
+
+test("removes a dangling reference symlink", async () => {
+  await using env = await fixture({
+    repos: { "a": {} },
+    global: [entry("a")],
+    store: { "a": "a" },
+  })
+
+  link(["a"])
+  fs.rmSync(Config.storeDir(), { recursive: true, force: true })
+
+  const result = unlink("a")
+
+  expect(result.ok).toBe(true)
+  expect(fs.lstatSync(path.join(Config.refDir(), "a"), { throwIfNoEntry: false })).toBeUndefined()
+})

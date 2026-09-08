@@ -152,3 +152,24 @@ test("pull reports error when reference dir missing", async () => {
   expect(result.failed[0]!.name).toBe("ghost")
   expect(result.failed[0]!.error).toContain("missing")
 })
+
+test("repoints reference symlinks when the store moves", async () => {
+  await using env = await fixture({
+    repos: { "a": {} },
+    global: [entry("a")],
+    store: { "a": "a" },
+    local: ["a"],
+  })
+
+  sync()
+
+  const moved = env.dir("moved-store")
+  fs.renameSync(Config.storeDir(), moved)
+  Config.Global.write({ ...Config.Global.read(), store: moved })
+
+  const result = sync()
+
+  expect(result.linked).toEqual(["a"])
+  expect(result.unchanged).toEqual([])
+  expect(fs.readlinkSync(path.join(Config.refDir(), "a"))).toBe(path.join(moved, "a"))
+})

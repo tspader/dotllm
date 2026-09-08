@@ -198,9 +198,20 @@ export function sync(): SyncResult {
     }
 
     const target = path.join(refDir, name);
-    if (fs.existsSync(target)) {
+    const stat = fs.lstatSync(target, { throwIfNoEntry: false });
+
+    if (stat && !stat.isSymbolicLink()) {
       unchanged.push(name);
       continue;
+    }
+
+    if (stat && fs.readlinkSync(target) === store) {
+      unchanged.push(name);
+      continue;
+    }
+
+    if (stat) {
+      fs.unlinkSync(target);
     }
 
     fs.symlinkSync(store, target, "dir");
