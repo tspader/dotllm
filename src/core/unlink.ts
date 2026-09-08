@@ -18,7 +18,7 @@ export function unlink(name: string): UnlinkResult {
   }
 
   const target = path.join(Config.refDir(), found.name);
-  if (fs.existsSync(target)) {
+  if (fs.lstatSync(target, { throwIfNoEntry: false })) {
     fs.unlinkSync(target);
   }
 

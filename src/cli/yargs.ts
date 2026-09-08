@@ -150,7 +150,7 @@ export function help(
 }
 
 function fail(def: Command | Cli, name: string, path: string[] = []) {
-  return (msg: string | null): void => {
+  return (msg: string | null, err?: Error): void => {
     if (process.argv.includes("--help") || process.argv.includes("-h")) {
       help(def, name, path);
       process.exit(0);
@@ -162,7 +162,7 @@ function fail(def: Command | Cli, name: string, path: string[] = []) {
       help(def, name, path);
       process.exit(1);
     }
-    console.error(pc.red(msg ?? "Unknown error"));
+    console.error(pc.red(msg ?? err?.stack ?? err?.message ?? "Unknown error"));
     process.exit(1);
   };
 }
